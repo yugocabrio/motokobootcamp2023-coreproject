@@ -32,12 +32,43 @@ actor {
         return #Ok(suggestion);
     };
 
-    public shared({caller}) func vote(proposal_id : Int, yes_or_no : Bool) : async {#Ok : (Nat, Nat); #Err : Text} {
-        return #Err("Not implemented yet");
+    // public type Account = { owner : Principal; };
+    // let Ledger : actor = {checkAccountBalance : (Account) -> async Nat} = actor("dg2ce-tqaaa-aaaah-abz6q-cai");
+
+    //let Ledger : actor { 
+    //    checkAccountBalance: (Principal) -> async Nat;
+    //} = actor("r7inp-6aaaa-aaaaa-aaabq-cai");
+
+    //public func get_mb_balance(id : Principal) : async Nat {
+    //    return await Ledger.checkAccountBalance(id);
+    //};
+    // 100以上超えた時の処理
+    // MBtokenが1以上持っているか
+    public shared({caller}) func vote(proposal_id : Int, yes_or_no : Bool, vote_power : Nat) : async {#Ok : (Nat, Nat); #Err : Text} {
+        var pr: ?Proposal = usernames.get(proposal_id);
+        switch(pr) {
+            case(null) {
+                return #Err("problem");
+            };
+            case(?pr) {
+                var vote_yes : Nat = pr.votes_yes;
+                var vote_no : Nat = pr.votes_no;
+                if (yes_or_no) {
+                    vote_yes := vote_power;
+                } else {
+                    vote_no := vote_power;
+                };
+                var suggestion : Proposal = {id=pr.id; message=pr.message; proposer=pr.proposer; votes_yes= vote_yes; votes_no=vote_no };
+                usernames.put(pr.id, suggestion); 
+                return #Ok(suggestion.votes_yes, suggestion.votes_no);  
+                // ここで100処理を書いていく
+            };
+
+        };
     };
 
+
     public query func get_proposal(id : Int) : async ?Proposal {
-        // Debug.print(debug_show(Time.now())#" get  called   ");
         usernames.get(id); 
     };
     
