@@ -6,39 +6,25 @@ import Text "mo:base/Text";
 
 
 actor {
-    public type Tokens = {amount_e8s : Nat};
-
     public type Proposal = {
         id : Nat;
-        voters : List.List<Principal>;
-        state : ProposalState;
-        timestamp : Int;
+        message : Text;
         proposer : Principal;
-        votes_yes : Tokens;
-        votes_no : Tokens;
-        payload : ProposalPayload;
+        votes_yes : Nat;
+        votes_no : Nat;
     };
 
-    public type ProposalState = {
-        #failed : Text;
-        #open;
-        #rejected;
-        #accepted
-    };
-
-    public type ProposalPayload = {
-        title : Text;
-        button_text: Text;
-    };
-
-    let Webpage : actor { change_text : (Text) -> async () } = actor ("renrk-eyaaa-aaaaa-aaada-cai");
-
-    public func webpage_test(message : Text) : async () {
-        await Webpage.change_text(message);
-    };
+    stable var proposal_id : Nat = 0;
 
     public shared({caller}) func submit_proposal(this_payload : Text) : async {#Ok : Proposal; #Err : Text} {
-        return #Err("Your principal is : " # Principal.toText(caller));
+        var suggestion : Proposal = {
+            id = proposal_id;
+            message = this_payload;
+            proposer = caller;
+            votes_yes = 0;
+            votes_no = 0};
+        proposal_id += 1;    
+        return #Ok(suggestion);
     };
 
     public shared({caller}) func vote(proposal_id : Int, yes_or_no : Bool) : async {#Ok : (Nat, Nat); #Err : Text} {
@@ -51,5 +37,13 @@ actor {
     
     public query func get_all_proposals() : async [(Int, Proposal)] {
         return []
+    };
+
+
+    // webpageに反映させる
+    let Webpage : actor { change_text : (Text) -> async () } = actor ("renrk-eyaaa-aaaaa-aaada-cai");
+
+    public func webpage_test(message : Text) : async () {
+        await Webpage.change_text(message);
     };
 };
