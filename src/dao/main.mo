@@ -3,18 +3,22 @@ import Int "mo:base/Int";
 import Nat "mo:base/Nat";
 import List "mo:base/List";
 import Text "mo:base/Text";
-
+import HashMap "mo:base/HashMap";
+import Iter "mo:base/Iter";
+import Hash "mo:base/Hash";
 
 actor {
     public type Proposal = {
-        id : Nat;
+        id : Int;
         message : Text;
         proposer : Principal;
         votes_yes : Nat;
         votes_no : Nat;
     };
 
-    stable var proposal_id : Nat = 0;
+    stable var proposal_id : Int = 0;
+    stable var proposal_list : [(Int, Proposal)] = [];
+    let usernames = HashMap.fromIter<Int,Proposal>(proposal_list.vals(), 10, Int.equal, Int.hash);
 
     public shared({caller}) func submit_proposal(this_payload : Text) : async {#Ok : Proposal; #Err : Text} {
         var suggestion : Proposal = {
@@ -23,6 +27,7 @@ actor {
             proposer = caller;
             votes_yes = 0;
             votes_no = 0};
+        usernames.put(proposal_id, suggestion);
         proposal_id += 1;    
         return #Ok(suggestion);
     };
@@ -32,13 +37,14 @@ actor {
     };
 
     public query func get_proposal(id : Int) : async ?Proposal {
-        return null
+        // Debug.print(debug_show(Time.now())#" get  called   ");
+        usernames.get(id); 
     };
     
     public query func get_all_proposals() : async [(Int, Proposal)] {
-        return []
+        let ret: [(Int, Proposal)] =Iter.toArray<(Int,Proposal)>(usernames.entries()); 
+        return ret;
     };
-
 
     // webpageに反映させる
     let Webpage : actor { change_text : (Text) -> async () } = actor ("renrk-eyaaa-aaaaa-aaada-cai");
