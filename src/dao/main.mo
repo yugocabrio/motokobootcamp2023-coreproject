@@ -1,6 +1,34 @@
 import Principal "mo:base/Principal";
+import Int "mo:base/Int";
+import Nat "mo:base/Nat";
+import List "mo:base/List";
+import Text "mo:base/Text";
+
 actor {
-    type Proposal = {};// TO DEFINE;
+    public type Tokens = {amount_e8s : Nat};
+
+    public type Proposal = {
+        id : Nat;
+        voters : List.List<Principal>;
+        state : ProposalState;
+        timestamp : Int;
+        proposer : Principal;
+        votes_yes : Tokens;
+        votes_no : Tokens;
+        payload : ProposalPayload;
+    };
+
+    public type ProposalState = {
+        #failed : Text;
+        #open;
+        #rejected;
+        #accepted
+    };
+
+    public type ProposalPayload = {
+        title : Text;
+        button_text: Text;
+    };
 
     public shared({caller}) func submit_proposal(this_payload : Text) : async {#Ok : Proposal; #Err : Text} {
         return #Err("Your principal is : " # Principal.toText(caller));
