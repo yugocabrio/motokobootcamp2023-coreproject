@@ -4,6 +4,7 @@ import Nat "mo:base/Nat";
 import List "mo:base/List";
 import Text "mo:base/Text";
 
+
 actor {
     public type Tokens = {amount_e8s : Nat};
 
@@ -28,6 +29,12 @@ actor {
     public type ProposalPayload = {
         title : Text;
         button_text: Text;
+    };
+
+    let Webpage : actor { change_text : (Text) -> async () } = actor ("renrk-eyaaa-aaaaa-aaada-cai");
+
+    public func webpage_test(message : Text) : async () {
+        await Webpage.change_text(message);
     };
 
     public shared({caller}) func submit_proposal(this_payload : Text) : async {#Ok : Proposal; #Err : Text} {
